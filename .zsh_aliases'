@@ -45,10 +45,10 @@ alias itp-run-be="mvn spring-boot:run"
 alias splunk-query='tools-portal-backend | spath "attrs.TCC_ENV" | search "attrs.TCC_ENV"="production" "attrs.SERVICE_NAME"="tools-portal-backend"'
 alias cyspec="yarn run cypress run --browser chrome --headless -C ./cypress/cypress-units.json --spec "
 export PROXY_USERNAME=phillip.wille
-export PROXY_PASSWORD=""
+export PROXY_PASSWORD="okta7K7k44m@"
 
 function mvntree(){
-	mvn dependency:tree -Dincludes=$1
+	$(mvn dependency:tree -Dverbose -Dincludes=$1)	
 }
 
 function sonar(){
