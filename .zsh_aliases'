@@ -1,16 +1,10 @@
 #!/bin/zsh
-
-# BAYER
-export VAULT_ADDR='https://vault.agro.services'
-
-# CLIMATE
 export M2_HOME=$SDKMAN_CANDIDATES_DIR/maven/current
 export BROWSER=vivaldi
 export ELECTRON_ENABLE_LOGGING=1
 #export TARGET_ENV=production
 export TCC_ENV=production
 
-alias run-stv="docker run --hostname "tools.tcc.lix" -d -it -p 80:8080 -e TCC_ENV=ci stv:latest"
 
 alias cd1="cd .."
 alias cd2="cd ../../"
@@ -49,22 +43,20 @@ alias itpbe-units="mvn clean test -Dspring.profiles.active=dev -DexcludedGroups=
 alias itpbe-int="mvn clean verify -Dspring.profiles.active=production -DexcludedGroups=TestWithTestContainer -DSTACK=BLUE -DGroups=$1"
 alias itp-run-be="mvn spring-boot:run"
 alias splunk-query='tools-portal-backend | spath "attrs.TCC_ENV" | search "attrs.TCC_ENV"="production" "attrs.SERVICE_NAME"="tools-portal-backend"'
-alias cyspec="yarn run cypress run --browser chrome --headless -C ./cypress/config/cypress-units.json --spec "
-alias clear-aws="envmgr --clear-cache"
-
+alias cyspec="yarn run cypress run --browser chrome --headless -C ./cypress/cypress-units.json --spec "
 export PROXY_USERNAME=phillip.wille
 export PROXY_PASSWORD="okta7K7k44m@"
 
 function mvntree(){
-	mvn dependency:tree -Dincludes=$1
+	$(mvn dependency:tree -Dverbose -Dincludes=$1)	
 }
 
 function sonar(){
-	sonar-scanner \
-  	-Dsonar.projectKey=itp-fe_js-ts-jsx-sass \
-  	-Dsonar.sources=. \
-  	-Dsonar.host.url=https://sonarqube.ci.tcc.services \
-  	-Dsonar.login=050c554140137617e5a6aabeec86fd441a295a4c
+sonar-scanner \
+  -Dsonar.projectKey=itp-fe_js-ts-jsx-sass \
+  -Dsonar.sources=. \
+  -Dsonar.host.url=https://sonarqube.ci.tcc.services \
+  -Dsonar.login=050c554140137617e5a6aabeec86fd441a295a4c
 }
 
 function add-evn-param(){
@@ -82,22 +74,8 @@ function env-update(){
 	printenv
 }
 
-function assume-role() {
-	aws sts assume-role \
-	--role-session-name stv-test \
-	--role-arn arn:aws:iam::$1:role/stv-test \
-	--query "Credentials"
-}
-function get-ssm-param(){
-	aws ssm get-parameter --region us-east-1 \
-	--name $1.secure.team-btr.itp.$2 \
-	--query 'Parameter' \
-	--with-decryption \
-	--output json;
-}
-
 function aws-prod() {
-#	envmgr --clear-cache
+	# envmgr --clear-cache
 
  	$(envmgr -e production --region us-east-1 --role btr-general)
  	aws ecr get-login-password --region us-east-1 | \
