@@ -1,5 +1,7 @@
 #!/bin/zsh
 
+export NVM_SYMLINK_CURRENT=true
+
 # BAYER
 export VAULT_ADDR='https://vault.agro.services'
 
@@ -9,8 +11,10 @@ export BROWSER=vivaldi
 export ELECTRON_ENABLE_LOGGING=1
 #export TARGET_ENV=production
 export TCC_ENV=production
+#export NODE_ENV=production
 
-alias run-stv="docker run --hostname "tools.tcc.lix" -d -it -p 80:8080 -e TCC_ENV=ci stv:latest"
+alias docrun="docker run --rm -p 8080:8080 -it dde-graphql"
+alias docbuild="docker build -t dde-graphql:latest ."
 
 alias cd1="cd .."
 alias cd2="cd ../../"
@@ -41,7 +45,7 @@ alias docker-rmi="docker images -a | grep '$1' | awk '{print $3}' | xargs docker
 
 #	TCC
 #alias update-aws="$(envmgr -e ci --region us-east-1 --role btr-general); $(aws ecr get-login --no-include-email --region us-east-1)"
-alias awsconsole="envmgr -E production -R btr-general --aws-console"
+alias aws-console="envmgr -E production -R btr-general --aws-console"
 alias itp-rdi="docker run --rm -it itp-fe bash"
 alias itp-rdc="docker run --rm -v ${PWD}:/tools-portal -p 3000:3000 itp-fe"
 alias itp-bdi="docker build -t itp-fe:latest -f Dockerfile.local ."
@@ -75,9 +79,15 @@ function add-evn-param(){
 function env-update(){
         export CYPRESS_E2E_USER=$(params decrypt ${TCC_ENV}.secure.team-btr.itp.CYPRESS_E2E_USER)
         export CYPRESS_E2E_PWD=$(params decrypt ${TCC_ENV}.secure.team-btr.itp.CYPRESS_E2E_PWD)
-
         export CYPRESS_E2E_TEST_USER=$(params decrypt ${TCC_ENV}.secure.team-btr.itp.CYPRESS_E2E_TEST_USER)
         export CYPRESS_E2E_TEST_USER_PWD=$(params decrypt ${TCC_ENV}.secure.team-btr.itp.CYPRESS_E2E_TEST_USER_PWD)
+
+	export FASTE_API_KEY=$(params decrypt ${TCC_ENV}.secure.team-btr.dde.FASTE_API_KEY)
+	export BAYER_AZURE_ID=$(params decrypt ${TCC_ENV}.secure.team-btr.dde.BAYER_AZURE_ID)
+	export BAYER_AZURE_SECRET=$(params decrypt ${TCC_ENV}.secure.team-btr.dde.BAYER_AZURE_SECRET)
+
+	export SMARTLING_ID=$(params decrypt ${TCC_ENV}.secure.team-btr.dde.SMARTLING_ID)
+	export SMARTLING_SECRET=$(params decrypt ${TCC_ENV}.secure.team-btr.dde.SMARTLING_SECRET)
 
 	printenv
 }
@@ -98,8 +108,9 @@ function get-ssm-param(){
 
 function aws-prod() {
 #	envmgr --clear-cache
+	export TCC_ENV=production
 
- 	$(envmgr -e production --region us-east-1 --role btr-general)
+ 	$(envmgr -e $TCC_ENV --region us-east-1 --role btr-general)
  	aws ecr get-login-password --region us-east-1 | \
 	docker login --username AWS \
 	--password-stdin 747953286079.dkr.ecr.us-east-1.amazonaws.com
@@ -108,7 +119,9 @@ function aws-prod() {
 }
 
 function aws-ci() {
-        $(envmgr -e ci --region us-east-1 --role btr-general)
+	export TCC_ENV=ci
+
+        $(envmgr -e $TCC_ENV --region us-east-1 --role btr-general)
       	aws ecr get-login-password --region us-east-1 | \
       	docker login --username AWS \
       	--password-stdin 747953286079.dkr.ecr.us-east-1.amazonaws.com
