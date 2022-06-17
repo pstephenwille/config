@@ -13,8 +13,7 @@ export ELECTRON_ENABLE_LOGGING=1
 export TCC_ENV=production
 #export NODE_ENV=production
 
-alias docrun="docker run --rm -p 8080:8080 -it dde-graphql"
-alias docbuild="docker build -t dde-graphql:latest ."
+alias run-stv="docker run --hostname "tools.tcc.lix" -d -it -p 80:8080 -e TCC_ENV=ci stv:latest"
 
 alias cd1="cd .."
 alias cd2="cd ../../"
@@ -38,7 +37,7 @@ alias lsfiles="tree -aphufi"
 #alias b-ssh="sudo launchctl unload /System/Library/LaunchDaemons/ssh.plist && sudo launchctl load /System/Library/LaunchDaemons/s$
 alias lock="pmset displaysleepnow"
 alias myip="host myip.opendns.com resolver1.opendns.com"
-alias psnode="ps aux|grep node"
+alias ps-node="ps aux|grep node"
 alias killallnode="sudo pkill -f node && pgrep node | xargs sudo kill -9"
 alias docker-prune="docker container  prune -f && docker image prune -f"
 alias docker-rmi="docker images -a | grep '$1' | awk '{print $3}' | xargs docker rmi"
@@ -55,117 +54,139 @@ alias itp-run-be="mvn spring-boot:run"
 alias splunk-query='tools-portal-backend | spath "attrs.TCC_ENV" | search "attrs.TCC_ENV"="production" "attrs.SERVICE_NAME"="tools-portal-backend"'
 alias cyspec="yarn run cypress run --browser chrome --headless -C ./cypress/config/cypress-units.json --spec "
 alias clear-aws="envmgr --clear-cache"
+#alias ol-role="eval $(envmgr -E production -R orchestration-layer)"
+alias aws-roles="envmgr --list-roles"
 
 export PROXY_USERNAME=phillip.wille
-export PROXY_PASSWORD="okta7K7k44m@"
+export PROXY_PASSWORD="oktaPs0M9F54^$"
 
-function mvntree(){
-	mvn dependency:tree -Dincludes=$1
+
+source ~/bin/generate_artifactory_auth_token.sh
+bin-token
+
+function aws-dde() {
+  $(envmgr -E production -R dde-general)
 }
 
-function sonar(){
-	sonar-scanner \
-  	-Dsonar.projectKey=itp-fe_js-ts-jsx-sass \
-  	-Dsonar.sources=. \
-  	-Dsonar.host.url=https://sonarqube.ci.tcc.services \
-  	-Dsonar.login=050c554140137617e5a6aabeec86fd441a295a4c
+function aws-ol() {
+  $(envmgr -E production -R orchestration-layer)
 }
 
-function add-evn-param(){
-	# env, param name, value
-	params add $1.secure.team-btr.itp.$2 $3
-	# params decrypt qa1.secure.team-btr.itp.CYPRESS_E2E_USER
+function mvntree() {
+  mvn dependency:tree -Dincludes=$1
 }
-function env-update(){
-        export CYPRESS_E2E_USER=$(params decrypt ${TCC_ENV}.secure.team-btr.itp.CYPRESS_E2E_USER)
-        export CYPRESS_E2E_PWD=$(params decrypt ${TCC_ENV}.secure.team-btr.itp.CYPRESS_E2E_PWD)
-        export CYPRESS_E2E_TEST_USER=$(params decrypt ${TCC_ENV}.secure.team-btr.itp.CYPRESS_E2E_TEST_USER)
-        export CYPRESS_E2E_TEST_USER_PWD=$(params decrypt ${TCC_ENV}.secure.team-btr.itp.CYPRESS_E2E_TEST_USER_PWD)
 
-	export FASTE_API_KEY=$(params decrypt ${TCC_ENV}.secure.team-btr.dde.FASTE_API_KEY)
-	export BAYER_AZURE_ID=$(params decrypt ${TCC_ENV}.secure.team-btr.dde.BAYER_AZURE_ID)
-	export BAYER_AZURE_SECRET=$(params decrypt ${TCC_ENV}.secure.team-btr.dde.BAYER_AZURE_SECRET)
+function sonar() {
+  sonar-scanner \
+    -Dsonar.projectKey=itp-fe_js-ts-jsx-sass \
+    -Dsonar.sources=. \
+    -Dsonar.host.url=https://sonarqube.ci.tcc.services \
+    -Dsonar.login=050c554140137617e5a6aabeec86fd441a295a4c
+}
 
-	export SMARTLING_ID=$(params decrypt ${TCC_ENV}.secure.team-btr.dde.SMARTLING_ID)
-	export SMARTLING_SECRET=$(params decrypt ${TCC_ENV}.secure.team-btr.dde.SMARTLING_SECRET)
+function add-evn-param() {
+  # env, param name, value
+  params add $1.secure.team-btr.itp.$2 $3
+  # params decrypt qa1.secure.team-btr.itp.CYPRESS_E2E_USER
+}
+function env-update() {
+  export CYPRESS_E2E_USER=$(params decrypt ${TCC_ENV}.secure.team-btr.itp.CYPRESS_E2E_USER)
+  export CYPRESS_E2E_PWD=$(params decrypt ${TCC_ENV}.secure.team-btr.itp.CYPRESS_E2E_PWD)
 
-	printenv
+  export CYPRESS_E2E_TEST_USER=$(params decrypt ${TCC_ENV}.secure.team-btr.itp.CYPRESS_E2E_TEST_USER)
+  export CYPRESS_E2E_TEST_USER_PWD=$(params decrypt ${TCC_ENV}.secure.team-btr.itp.CYPRESS_E2E_TEST_USER_PWD)
+
+  export FASTE_API_KEY=$(params decrypt ${TCC_ENV}.secure.team-btr.dde.FASTE_API_KEY)
+  export BAYER_AZURE_ID=$(params decrypt ${TCC_ENV}.secure.team-btr.dde.BAYER_AZURE_ID)
+  export BAYER_AZURE_SECRET=$(params decrypt ${TCC_ENV}.secure.team-btr.dde.BAYER_AZURE_SECRET)
+
+  export SMARTLING_ID=$(params decrypt ${TCC_ENV}.secure.team-btr.dde.SMARTLING_ID)
+  export SMARTLING_SECRET=$(params decrypt ${TCC_ENV}.secure.team-btr.dde.SMARTLING_SECRET)
+
+  printenv
 }
 
 function assume-role() {
-	aws sts assume-role \
-	--role-session-name stv-test \
-	--role-arn arn:aws:iam::$1:role/stv-test \
-	--query "Credentials"
+  aws sts assume-role \
+    --role-session-name stv-test \
+    --role-arn arn:aws:iam::$1:role/stv-test \
+    --query "Credentials"
 }
-function get-ssm-param(){
-	aws ssm get-parameter --region us-east-1 \
-	--name $1.secure.team-btr.itp.$2 \
-	--query 'Parameter' \
-	--with-decryption \
-	--output json;
+function get-ssm-param() {
+  aws ssm get-parameter --region us-east-1 \
+    --name $1.secure.team-btr.itp.$2 \
+    --query 'Parameter' \
+    --with-decryption \
+    --output json
 }
 
 function aws-prod() {
-#	envmgr --clear-cache
-	export TCC_ENV=production
+  export TCC_ENV=production
+  #	envmgr --clear-cache
 
- 	$(envmgr -e $TCC_ENV --region us-east-1 --role btr-general)
- 	aws ecr get-login-password --region us-east-1 | \
-	docker login --username AWS \
-	--password-stdin 747953286079.dkr.ecr.us-east-1.amazonaws.com
+  $(envmgr -e $TCC_ENV --region us-east-1 --role btr-general)
+  aws ecr get-login-password --region us-east-1 |
+    docker login --username AWS \
+      --password-stdin 747953286079.dkr.ecr.us-east-1.amazonaws.com
 
-	env-update
+  env-update
 }
 
 function aws-ci() {
-	export TCC_ENV=ci
+  export TCC_ENV=ci
 
-        $(envmgr -e $TCC_ENV --region us-east-1 --role btr-general)
-      	aws ecr get-login-password --region us-east-1 | \
-      	docker login --username AWS \
-      	--password-stdin 747953286079.dkr.ecr.us-east-1.amazonaws.com
+  $(envmgr -e $TCC_ENV --region us-east-1 --role btr-general)
+  aws ecr get-login-password --region us-east-1 |
+    docker login --username AWS \
+      --password-stdin 747953286079.dkr.ecr.us-east-1.amazonaws.com
 
-        env-update
+  env-update
 }
 
 function climate-proxy() {
-    docker run --rm -p 3128:3128 --name local-proxy -d \
+  docker run --rm -p 3128:3128 --name local-proxy -d \
     -e PROXY_USERNAME=$PROXY_USERNAME \
     -e PROXY_PASSWORD=$PROXY_PASSWORD \
     -it 747953286079.dkr.ecr.us-east-1.amazonaws.com/cloudeng/local-proxy
+
+  export PROXY_ENABLED=true
+  export GLOBAL_AGENT_HTTP_PROXY=http://localhost:3128
+  export GLOBAL_AGENT_NO_PROXY='bin.tcc.li,engine-report.apollodata.,localhost'
+
+  export http_proxy=http://localhost:3128
+  export https_proxy=http://localhost:3128
+  export no_proxy=localhost
+
 }
 
-function itp-be-start {
-	cd ~/Projects/btr/tools-portal-backend
-	mvn clean install -DskipTests
-	aws-update $1
-	cd ./application
-	mvn spring-boot:run -Dspring.profiles.active=${TCC_ENV}
+function itp-be-start() {
+  cd ~/Projects/btr/tools-portal-backend
+  mvn clean install -DskipTests
+  aws-update $1
+  cd ./application
+  mvn spring-boot:run -Dspring.profiles.active=${TCC_ENV}
 }
 
 # FVWeb
-function fvweb-setup(){
-        eval `envmgr -e ci --region us-east-1 --role phasr_enhanced-developer`
-        aws ecr get-login-password --region us-east-1 | \
-        docker login --username AWS \
-        --password-stdin 747953286079.dkr.ecr.us-east-1.amazonaws.com
+function fvweb-setup() {
+  eval $(envmgr -e ci --region us-east-1 --role phasr_enhanced-developer)
+  aws ecr get-login-password --region us-east-1 |
+    docker login --username AWS \
+      --password-stdin 747953286079.dkr.ecr.us-east-1.amazonaws.com
 
-        env-update
+  env-update
 
-	params decrypt qa1.rds.fvcab.fieldviewplusPrecisionWebDbUser
-	params decrypt qa1.rds.fvcab.fieldviewplusPrecisionWebDbPassword
+  params decrypt qa1.rds.fvcab.fieldviewplusPrecisionWebDbUser
+  params decrypt qa1.rds.fvcab.fieldviewplusPrecisionWebDbPassword
 }
-
 
 #   nix
 #pkill -f xbindkeys; xbindkeys &
 
 sudo launchctl limit maxfiles 65536 2147483000
 
-
-function ps-svc {
-	ps aux|grep $1
+function ps-svc() {
+  ps aux | grep $1
 }
 
 function install() {
@@ -186,10 +207,8 @@ function tcptraffic() {
 export PATH="/Library/Frameworks/Python.framework/Versions/2.7/bin:${PATH}"
 export PATH
 
-
 # SDKMan
 #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
 #. /Users/stephen/.sdkman/bin/sdkman-init.sh
 #export SDKMAN_DIR="${HOME}/.sdkman"
 #[[ -s "${HOME}/.sdkman/bin/sdkman-init.sh" ]] && source "${HOME}/.sdkman/bin/sdkman-init.sh"
-
