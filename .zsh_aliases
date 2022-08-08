@@ -10,7 +10,7 @@ export M2_HOME=$SDKMAN_CANDIDATES_DIR/maven/current
 export BROWSER=vivaldi
 export ELECTRON_ENABLE_LOGGING=1
 #export TARGET_ENV=production
-export TCC_ENV=production
+#export TCC_ENV=dev
 #export NODE_ENV=production
 
 alias run-stv="docker run --hostname "tools.tcc.lix" -d -it -p 80:8080 -e TCC_ENV=ci stv:latest"
@@ -42,6 +42,7 @@ alias killallnode="sudo pkill -f node && pgrep node | xargs sudo kill -9"
 alias docker-prune="docker container  prune -f && docker image prune -f"
 alias docker-rmi="docker images -a | grep '$1' | awk '{print $3}' | xargs docker rmi"
 
+
 #	TCC
 #alias update-aws="$(envmgr -e ci --region us-east-1 --role btr-general); $(aws ecr get-login --no-include-email --region us-east-1)"
 alias aws-console="envmgr -E production -R btr-general --aws-console"
@@ -53,9 +54,12 @@ alias itpbe-int="mvn clean verify -Dspring.profiles.active=production -Dexcluded
 alias itp-run-be="mvn spring-boot:run"
 alias splunk-query='tools-portal-backend | spath "attrs.TCC_ENV" | search "attrs.TCC_ENV"="production" "attrs.SERVICE_NAME"="tools-portal-backend"'
 alias cyspec="yarn run cypress run --browser chrome --headless -C ./cypress/config/cypress-units.json --spec "
-alias clear-aws="envmgr --clear-cache"
+alias aws-clear="envmgr --clear-cache"
 #alias ol-role="eval $(envmgr -E production -R orchestration-layer)"
 alias aws-roles="envmgr --list-roles"
+alias env-ids="envmgr -l"
+alias re-link="yarn unlink @tcc-ol/dde-eva-ol-package && yarn link @tcc-ol/dde-eva-ol-package"
+
 
 export PROXY_USERNAME=phillip.wille
 export PROXY_PASSWORD="oktaPs0M9F54^$"
@@ -63,6 +67,16 @@ export PROXY_PASSWORD="oktaPs0M9F54^$"
 
 source ~/bin/generate_artifactory_auth_token.sh
 bin-token
+
+function docker-stop-all(){
+	$(docker ps -aq | xargs docker stop | xargs docker rm)
+}
+function docker-rm-all(){
+        docker kill $(docker ps -a -q)
+}
+function docker-rmi-all(){
+        docker kill $(docker images -q)
+}
 
 function aws-dde() {
   $(envmgr -E production -R dde-general)
@@ -143,7 +157,7 @@ function aws-ci() {
   env-update
 }
 
-function climate-proxy() {
+function local-proxy() {
   docker run --rm -p 3128:3128 --name local-proxy -d \
     -e PROXY_USERNAME=$PROXY_USERNAME \
     -e PROXY_PASSWORD=$PROXY_PASSWORD \
@@ -153,9 +167,9 @@ function climate-proxy() {
   export GLOBAL_AGENT_HTTP_PROXY=http://localhost:3128
   export GLOBAL_AGENT_NO_PROXY='bin.tcc.li,engine-report.apollodata.,localhost'
 
-  export http_proxy=http://localhost:3128
-  export https_proxy=http://localhost:3128
-  export no_proxy=localhost
+export http_proxy=http://localhost:3128
+export https_proxy=http://localhost:3128
+export no_proxy=localhost
 
 }
 
