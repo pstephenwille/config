@@ -1,6 +1,12 @@
 #!/bin/zsh
 
 export NVM_SYMLINK_CURRENT=true
+#export MAVEN_OPTS="-Xms256M -Xmx256M"
+#export _JAVA_OPTIONS='-Xss1000k -XX:VMThreadStackSize=1000 -Xms1G -Xmx1G'
+
+
+#export JAVA_TOOL_OPTIONS="-Dhttp.proxyHost=localhost -Dhttp.proxyPort=3128 -Dhttp.nonProxyHosts=localhost -Dhttps.proxyHost=localhost -Dhttps.proxyPort=3128"
+
 
 # BAYER
 export VAULT_ADDR='https://vault.agro.services'
@@ -12,6 +18,9 @@ export ELECTRON_ENABLE_LOGGING=1
 #export TARGET_ENV=production
 #export TCC_ENV=dev
 #export NODE_ENV=production
+export GITLAB_TOKEN="GuzwHLEWxAZjmKuxEjNz"
+export VIRTUALENVWRAPPER_PYTHON=/usr/local/bin/python3
+export VIRTUALENVWRAPPER_VIRTUALENV=/usr/local/bin/virtualenv
 
 alias run-stv="docker run --hostname "tools.tcc.lix" -d -it -p 80:8080 -e TCC_ENV=ci stv:latest"
 
@@ -41,11 +50,16 @@ alias ps-node="ps aux|grep node"
 alias killallnode="sudo pkill -f node && pgrep node | xargs sudo kill -9"
 alias docker-prune="docker container  prune -f && docker image prune -f"
 alias docker-rmi="docker images -a | grep '$1' | awk '{print $3}' | xargs docker rmi"
+alias ps-docker="docker ps -a"
+alias nomcafee="sudo launchctl unload /Library/LaunchDaemons/com.mcafee.*"
+alias idea-aliases="idea  ~/local-config/.zsh_aliases"
+
+
 
 
 #	TCC
-#alias update-aws="$(envmgr -e ci --region us-east-1 --role btr-general); $(aws ecr get-login --no-include-email --region us-east-1)"
-alias aws-console="envmgr -E production -R btr-general --aws-console"
+#alias update-aws="$(envmgr -e ci --region us-east-1 --role rose-imagery); $(aws ecr get-login --no-include-email --region us-east-1)"
+alias aws-console="envmgr -E production -R rose-imagery --aws-console"
 alias itp-rdi="docker run --rm -it itp-fe bash"
 alias itp-rdc="docker run --rm -v ${PWD}:/tools-portal -p 3000:3000 itp-fe"
 alias itp-bdi="docker build -t itp-fe:latest -f Dockerfile.local ."
@@ -59,43 +73,70 @@ alias aws-clear="envmgr --clear-cache"
 alias aws-roles="envmgr --list-roles"
 alias env-ids="envmgr -l"
 alias re-link="yarn unlink @tcc-ol/dde-eva-ol-package && yarn link @tcc-ol/dde-eva-ol-package"
-
+alias tcclocal="export TCC_ENV=local"
+alias tccdev="export TCC_ENV=dev"
+alias metaknight-jwt="sbt 'runMain com.climate.metaknight.utilscripts.GenerateJwt'"
+alias run-mocks="docker-compose -f docker-compose-mock.yaml up"
+alias artifactory-auth="curl --header 'Authorization: bearer ${ARTIFACTORY_SVC_ACCT_PWD}' 'https://bin.tcc.li/api/system/ping' -v -v -v"
 
 export PROXY_USERNAME=phillip.wille
-export PROXY_PASSWORD="oktaPs0M9F54^$"
+export PROXY_PASSWORD="oktas6XWvYvB&F5a#b"
+export PATH="/usr/local/opt/mysql-client/bin:$PATH"
+export ARTIFACTORY_SVC_ACCT="${PROXY_USERNAME}@climate.com"
+export ARTIFACTORY_HOST="bin.tcc.li"
+export ARTIFACTORY_URL="https://${ARTIFACTORY_HOST}"
+export ARTIFACTORY_SVC_ACCT_PWD=$(security find-generic-password -s "Artifactory 1yr token" -w)
 
+sudo launchctl limit maxfiles 65536 2147483000
 
-source ~/bin/generate_artifactory_auth_token.sh
-bin-token
+function setuppyenv(){
+    python3 -m venv venv &&
+    source venv/bin/activate &&
+    python -m pip install --upgrade pip &&
+    python -m pip install python-gitlab boto3
 
-function docker-stop-all(){
-	$(docker ps -aq | xargs docker stop | xargs docker rm)
 }
-function docker-rm-all(){
-        docker kill $(docker ps -a -q)
-}
-function docker-rmi-all(){
-        docker kill $(docker images -q)
+function sbt-test-only() {
+	sbt "test:testOnly *$1" 
 }
 
+
+
+function aws-prod() {
+  export TCC_ENV=production
+  $(envmgr -E $TCC_ENV --region us-east-1 -R rose-imagery)
+
+  aws ecr get-login-password --region us-east-1 |
+    docker login --username AWS \
+      --password-stdin 747953286079.dkr.ecr.us-east-1.amazonaws.com
+
+  env-update
+}
+function aws-ci() {
+  export TCC_ENV=ci
+  $(envmgr -E $TCC_ENV --region us-east-1 -R rose-imagery)
+
+  aws ecr get-login-password --region us-east-1 |
+    docker login --username AWS \
+      --password-stdin 747953286079.dkr.ecr.us-east-1.amazonaws.com
+
+  env-update
+}
 function aws-dde() {
   $(envmgr -E production -R dde-general)
+  env-update
 }
-
 function aws-ol() {
   $(envmgr -E production -R orchestration-layer)
+  env-update
 }
-
-function mvntree() {
-  mvn dependency:tree -Dincludes=$1
+function aws-phasr() {
+    $(envmgr -E $TCC_ENV --region us-east-1 -R phasr_enhanced-developer)
+    env-update
 }
-
-function sonar() {
-  sonar-scanner \
-    -Dsonar.projectKey=itp-fe_js-ts-jsx-sass \
-    -Dsonar.sources=. \
-    -Dsonar.host.url=https://sonarqube.ci.tcc.services \
-    -Dsonar.login=050c554140137617e5a6aabeec86fd441a295a4c
+function aws-rose-fvc() {
+    $(envmgr -E fvc --region us-east-1 -R rose-imagery)
+    env-update
 }
 
 function add-evn-param() {
@@ -104,22 +145,8 @@ function add-evn-param() {
   # params decrypt qa1.secure.team-btr.itp.CYPRESS_E2E_USER
 }
 function env-update() {
-  export CYPRESS_E2E_USER=$(params decrypt ${TCC_ENV}.secure.team-btr.itp.CYPRESS_E2E_USER)
-  export CYPRESS_E2E_PWD=$(params decrypt ${TCC_ENV}.secure.team-btr.itp.CYPRESS_E2E_PWD)
-
-  export CYPRESS_E2E_TEST_USER=$(params decrypt ${TCC_ENV}.secure.team-btr.itp.CYPRESS_E2E_TEST_USER)
-  export CYPRESS_E2E_TEST_USER_PWD=$(params decrypt ${TCC_ENV}.secure.team-btr.itp.CYPRESS_E2E_TEST_USER_PWD)
-
-  export FASTE_API_KEY=$(params decrypt ${TCC_ENV}.secure.team-btr.dde.FASTE_API_KEY)
-  export BAYER_AZURE_ID=$(params decrypt ${TCC_ENV}.secure.team-btr.dde.BAYER_AZURE_ID)
-  export BAYER_AZURE_SECRET=$(params decrypt ${TCC_ENV}.secure.team-btr.dde.BAYER_AZURE_SECRET)
-
-  export SMARTLING_ID=$(params decrypt ${TCC_ENV}.secure.team-btr.dde.SMARTLING_ID)
-  export SMARTLING_SECRET=$(params decrypt ${TCC_ENV}.secure.team-btr.dde.SMARTLING_SECRET)
-
   printenv
 }
-
 function assume-role() {
   aws sts assume-role \
     --role-session-name stv-test \
@@ -128,49 +155,27 @@ function assume-role() {
 }
 function get-ssm-param() {
   aws ssm get-parameter --region us-east-1 \
-    --name $1.secure.team-btr.itp.$2 \
-    --query 'Parameter' \
+    --name $1 \
     --with-decryption \
     --output json
 }
 
-function aws-prod() {
-  export TCC_ENV=production
-  #	envmgr --clear-cache
+function bounce-climate-proxy() {
+  export http_proxy='http://localhost:3128'
+  export HTTP_PROXY='http://localhost:3128'
+  export https_proxy='http://localhost:3128'
+  export HTTPS_PROXY='http://localhost:3128'
+  export NO_PROXY='localhost'
 
-  $(envmgr -e $TCC_ENV --region us-east-1 --role btr-general)
-  aws ecr get-login-password --region us-east-1 |
-    docker login --username AWS \
-      --password-stdin 747953286079.dkr.ecr.us-east-1.amazonaws.com
-
-  env-update
+   ~/bin/local-proxy.sh stop;
+   ~/bin/local-proxy.sh start;
 }
 
-function aws-ci() {
-  export TCC_ENV=ci
-
-  $(envmgr -e $TCC_ENV --region us-east-1 --role btr-general)
-  aws ecr get-login-password --region us-east-1 |
-    docker login --username AWS \
-      --password-stdin 747953286079.dkr.ecr.us-east-1.amazonaws.com
-
-  env-update
-}
-
-function local-proxy() {
-  docker run --rm -p 3128:3128 --name local-proxy -d \
-    -e PROXY_USERNAME=$PROXY_USERNAME \
-    -e PROXY_PASSWORD=$PROXY_PASSWORD \
-    -it 747953286079.dkr.ecr.us-east-1.amazonaws.com/cloudeng/local-proxy
-
-  export PROXY_ENABLED=true
-  export GLOBAL_AGENT_HTTP_PROXY=http://localhost:3128
-  export GLOBAL_AGENT_NO_PROXY='bin.tcc.li,engine-report.apollodata.,localhost'
-
-export http_proxy=http://localhost:3128
-export https_proxy=http://localhost:3128
-export no_proxy=localhost
-
+function ssh-jumpbox() {
+   ssh -l phillip.wille -vvv -o StrictHostKeyChecking=no \
+   -L $1 \
+   -p 2222 \
+   -N jump.production.tcc.services
 }
 
 function itp-be-start() {
@@ -180,8 +185,6 @@ function itp-be-start() {
   cd ./application
   mvn spring-boot:run -Dspring.profiles.active=${TCC_ENV}
 }
-
-# FVWeb
 function fvweb-setup() {
   eval $(envmgr -e ci --region us-east-1 --role phasr_enhanced-developer)
   aws ecr get-login-password --region us-east-1 |
@@ -194,21 +197,37 @@ function fvweb-setup() {
   params decrypt qa1.rds.fvcab.fieldviewplusPrecisionWebDbPassword
 }
 
-#   nix
-#pkill -f xbindkeys; xbindkeys &
 
-sudo launchctl limit maxfiles 65536 2147483000
+function docker-exec() {
+    docker exec -it $1 /bin/sh
+}
+function docker-stop-all(){
+	$(docker ps -aq | xargs docker stop | xargs docker rm)
+}
+function docker-rm-all(){
+        docker kill $(docker ps -a -q)
+}
+function docker-rmi-all(){
+        docker kill $(docker images -q)
+}
 
+
+
+function mvntree() {
+  mvn dependency:tree -Dincludes=$1
+}
+function sonar() {
+  sonar-scanner \
+    -Dsonar.projectKey=itp-fe_js-ts-jsx-sass \
+    -Dsonar.sources=. \
+    -Dsonar.host.url=https://sonarqube.ci.tcc.services \
+    -Dsonar.login=050c554140137617e5a6aabeec86fd441a295a4c
+}
 function ps-svc() {
   ps aux | grep $1
 }
-
-function install() {
-  sudo apt-get install -y $1
-}
-
-function tcptraffic() {
-  sudo tcpdump -i $1 -va
+function svc-port(){
+	lsof -nRVL -i:$1
 }
 
 # NVM
@@ -218,8 +237,8 @@ function tcptraffic() {
 
 # Setting PATH for Python 2.7
 # The original version is saved in .bash_profile.pysave
-export PATH="/Library/Frameworks/Python.framework/Versions/2.7/bin:${PATH}"
-export PATH
+#export PATH="/Library/Frameworks/Python.framework/Versions/2.7/bin:${PATH}"
+#export PATH
 
 # SDKMan
 #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
