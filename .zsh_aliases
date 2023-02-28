@@ -78,6 +78,8 @@ alias tccdev="export TCC_ENV=dev"
 alias metaknight-jwt="sbt 'runMain com.climate.metaknight.utilscripts.GenerateJwt'"
 alias run-mocks="docker-compose -f docker-compose-mock.yaml up"
 alias artifactory-auth="curl --header 'Authorization: bearer ${ARTIFACTORY_SVC_ACCT_PWD}' 'https://bin.tcc.li/api/system/ping' -v -v -v"
+alias lein28="~/.lein/self-installs/lein28"
+
 
 export PROXY_USERNAME=phillip.wille
 export PROXY_PASSWORD="oktas6XWvYvB&F5a#b"
@@ -231,9 +233,9 @@ function svc-port(){
 }
 
 # NVM
-#export NVM_DIR="$HOME/.nvm"
-#[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"                    # This loads nvm
-#[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # bash completion
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"                    # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion" # bash completion
 
 # Setting PATH for Python 2.7
 # The original version is saved in .bash_profile.pysave
