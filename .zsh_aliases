@@ -78,7 +78,7 @@ alias tccdev="export TCC_ENV=dev"
 alias metaknight-jwt="sbt 'runMain com.climate.metaknight.utilscripts.GenerateJwt'"
 alias run-mocks="docker-compose -f docker-compose-mock.yaml up"
 alias artifactory-auth="curl --header 'Authorization: bearer ${ARTIFACTORY_SVC_ACCT_PWD}' 'https://bin.tcc.li/api/system/ping' -v -v -v"
-alias lein28="~/.lein/self-installs/lein28"
+alias lein28="/Users/stephen.wille/Projects/gaia/mosaic/dev-resources/lein28"
 
 
 export PROXY_USERNAME=phillip.wille
