@@ -73,7 +73,7 @@ alias aws-clear="envmgr --clear-cache"
 alias aws-roles="envmgr --list-roles"
 alias env-ids="envmgr -l"
 alias re-link="yarn unlink @tcc-ol/dde-eva-ol-package && yarn link @tcc-ol/dde-eva-ol-package"
-alias tcclocal="export TCC_ENV=local"
+alias tcclocal="export TCC_ENV=local; export TCC_ACCOUNT=local"
 alias tccdev="export TCC_ENV=dev"
 alias metaknight-jwt="sbt 'runMain com.climate.metaknight.utilscripts.GenerateJwt'"
 alias run-mocks="docker-compose -f docker-compose-mock.yaml up"
@@ -82,7 +82,7 @@ alias lein28="/Users/stephen.wille/Projects/gaia/mosaic/dev-resources/lein28"
 
 
 export PROXY_USERNAME=phillip.wille
-export PROXY_PASSWORD="oktas6XWvYvB&F5a#b"
+export PROXY_PASSWORD=""
 export PATH="/usr/local/opt/mysql-client/bin:$PATH"
 export ARTIFACTORY_SVC_ACCT="${PROXY_USERNAME}@climate.com"
 export ARTIFACTORY_HOST="bin.tcc.li"
