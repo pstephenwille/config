@@ -1,0 +1,66 @@
+#!/bin/zsh
+# xrandr --auto
+# xrandr --output DP-1 --mode 3840x2160 --rate 60.00
+
+
+export M2_HOME=$SDKMAN_CANDIDATES_DIR/maven/current
+export BROWSER=vivaldi
+export ELECTRON_ENABLE_LOGGING=1
+
+
+alias cd1="cd .."
+alias cd2="cd ../../"
+alias cd3="cd ../../../"
+alias cd4="cd ../../../../"
+alias cd5="cd ../../../../../"
+alias suno="sudo nano"
+alias gs="git status"
+alias gr="git remote show origin"
+alias gpl="git pull"
+alias gl="git log"
+alias gitam='git add -A && git ci --date="now" --am --allow-empty'
+alias gitrmmerged='git branch --merged | egrep -v "(^\*|master|dev)" | xargs git branch -d'
+alias gprune='git branch --merged | egrep -v "(^\*|master|dev)" | xargs git branch -D'
+alias s-za="nano ~/local-config/.zsh_aliases"
+alias s-zsh="nano ~/.zshrc"
+alias ll="ls -la"
+alias lst="ls -lat"
+alias sourcez="source ~/.zshrc"
+alias lsfiles="tree -aphufi"
+alias lock="pmset displaysleepnow"
+alias myip="host myip.opendns.com resolver1.opendns.com"
+alias bounce-desktop="killall plasmashell; kstart5 plasmashell"
+alias bounce-touchpad="sudo modprobe -r hid_multitouch && sudo modprobe hid_multitouch"
+alias psnode="ps aux|grep node"
+alias killallnode="sudo pkill -f node && pgrep node | xargs sudo kill -9"
+alias docker-prune="docker container  prune -f && docker image prune -f"
+alias docker-rmi="docker images -a | grep '$1' | awk '{print $3}' | xargs docker rmi"
+alias kubectl="minikube kubectl --"
+
+function mvntree(){
+	mvn dependency:tree -Dincludes=$1 && sudo modprobe hid_multitouch
+}
+
+function grptxt(){
+	# string, path
+	sudo grep -Hirn "$1" $2
+}
+
+
+#   nix
+pkill -f xbindkeys; xbindkeys &
+
+
+function ps-svc {
+	ps aux|grep $1
+}
+
+function install() {
+  sudo apt-get install -y $1
+}
+
+function tcptraffic() {
+  sudo tcpdump -i $1 -va
+}
+
+

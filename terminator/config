@@ -1,0 +1,29 @@
+[global_config]
+  focus = mouse
+  title_transmit_bg_color = "#5085ef"
+  suppress_multiple_term_dialog = True
+[keybindings]
+  split_horiz = <Alt>h
+  split_vert = <Alt>v
+  close_term = <Alt>w
+  copy = <Primary>c
+  paste = <Primary>v
+[profiles]
+  [[default]]
+    background_color = "#111111"
+    background_darkness = 0.87
+    background_type = transparent
+    cursor_color = "#eae8e8"
+    foreground_color = "#eae8e8"
+    palette = "#000000:#cd0000:#00cd00:#cdcd00:#3071a9:#cd00cd:#00cdcd:#faebd7:#404040:#ff0000:#00ff00:#ffff00:#368a55:#ff00ff:#00ffff:#ffffff"
+    copy_on_selection = True
+    background_image = None
+[layouts]
+  [[default]]
+    [[[child1]]]
+      type = Terminal
+      parent = window0
+    [[[window0]]]
+      type = Window
+      parent = ""
+[plugins]
