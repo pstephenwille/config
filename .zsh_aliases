@@ -18,7 +18,6 @@ export ELECTRON_ENABLE_LOGGING=1
 #export TARGET_ENV=production
 #export TCC_ENV=dev
 #export NODE_ENV=production
-export GITLAB_TOKEN="GuzwHLEWxAZjmKuxEjNz"
 export VIRTUALENVWRAPPER_PYTHON=/usr/local/bin/python3
 export VIRTUALENVWRAPPER_VIRTUALENV=/usr/local/bin/virtualenv
 
@@ -82,7 +81,8 @@ alias lein28="/Users/stephen.wille/Projects/gaia/mosaic/dev-resources/lein28"
 
 
 export PROXY_USERNAME=phillip.wille
-export PROXY_PASSWORD=""
+export PROXY_PASSWORD=$(security find-generic-password -s "okta" -w)
+export GITLAB_TOKEN=$(security find-generic-password -s "gitlab-token" -w)
 export PATH="/usr/local/opt/mysql-client/bin:$PATH"
 export ARTIFACTORY_SVC_ACCT="${PROXY_USERNAME}@climate.com"
 export ARTIFACTORY_HOST="bin.tcc.li"
@@ -90,6 +90,10 @@ export ARTIFACTORY_URL="https://${ARTIFACTORY_HOST}"
 export ARTIFACTORY_SVC_ACCT_PWD=$(security find-generic-password -s "Artifactory 1yr token" -w)
 
 sudo launchctl limit maxfiles 65536 2147483000
+
+function noset(){
+  nosetests -v --tests=$1 --with-coverage --cover-html --cover-html-dir=target/cover_scheduled_ingest
+}
 
 function setuppyenv(){
     python3 -m venv venv &&
