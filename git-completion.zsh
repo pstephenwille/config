@@ -7,13 +7,13 @@
 # You need git's bash completion script installed somewhere, by default it
 # would be the location bash-completion uses.
 #
-# If your script is somewhere else, you can configure it on your ~/.zshrc:
+# If your script is somewhere else, you can configure it on your ~/.zshrc.bak:
 #
 #  zstyle ':completion:*:*:git:*' script ~/.git-completion.zsh
 #
 # The recommended way to install this script is to make a copy of it in
 # ~/.zsh/ directory as ~/.zsh/git-completion.zsh and then add the following
-# to your ~/.zshrc file:
+# to your ~/.zshrc.bak file:
 #
 #  fpath=(~/.zsh $fpath)
 
