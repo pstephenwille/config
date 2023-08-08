@@ -1,11 +1,6 @@
 #!/bin/zsh
 
 export NVM_SYMLINK_CURRENT=true
-#export MAVEN_OPTS="-Xms256M -Xmx256M"
-#export _JAVA_OPTIONS='-Xss1000k -XX:VMThreadStackSize=1000 -Xms1G -Xmx1G'
-
-
-#export JAVA_TOOL_OPTIONS="-Dhttp.proxyHost=localhost -Dhttp.proxyPort=3128 -Dhttp.nonProxyHosts=localhost -Dhttps.proxyHost=localhost -Dhttps.proxyPort=3128"
 
 
 # BAYER
@@ -78,7 +73,7 @@ alias metaknight-jwt="sbt 'runMain com.climate.metaknight.utilscripts.GenerateJw
 alias run-mocks="docker-compose -f docker-compose-mock.yaml up"
 alias artifactory-auth="curl --header 'Authorization: bearer ${ARTIFACTORY_SVC_ACCT_PWD}' 'https://bin.tcc.li/api/system/ping' -v -v -v"
 alias lein28="/Users/stephen.wille/Projects/gaia/mosaic/dev-resources/lein28"
-
+alias bounce-gradle-build="./gradlew --stop; ./gradlew build; ./gradlew --stop"
 
 export PROXY_USERNAME=phillip.wille
 export PROXY_PASSWORD=$(security find-generic-password -s "okta" -w)
@@ -88,6 +83,12 @@ export ARTIFACTORY_SVC_ACCT="${PROXY_USERNAME}@climate.com"
 export ARTIFACTORY_HOST="bin.tcc.li"
 export ARTIFACTORY_URL="https://${ARTIFACTORY_HOST}"
 export ARTIFACTORY_SVC_ACCT_PWD=$(security find-generic-password -s "Artifactory 1yr token" -w)
+#export AWS_REGION=fake
+#export AWS_DEFAULT_REGION=fake
+#export AWS_ACCESS_KEY_ID=fake
+#export AWS_SECRET_ACCESS_KEY=fake
+#export AWS_SESSION_TOKEN=fake
+
 
 sudo launchctl limit maxfiles 65536 2147483000
 
@@ -137,6 +138,8 @@ function aws-ol() {
   env-update
 }
 function aws-phasr() {
+    export TCC_ENV=production
+
     $(envmgr -E $TCC_ENV --region us-east-1 -R phasr_enhanced-developer)
     env-update
 }
@@ -164,6 +167,12 @@ function get-ssm-param() {
     --name $1 \
     --with-decryption \
     --output json
+}
+
+function get-secretsmanager-param(){
+  aws secretsmanager get-secret-value \
+    --region us-east-1 \
+    --secret-id $1
 }
 
 function bounce-climate-proxy() {
