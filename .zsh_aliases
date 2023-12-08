@@ -1,7 +1,13 @@
 #!/bin/zsh
 
-export NVM_SYMLINK_CURRENT=true
+sudo launchctl limit maxfiles 256 unlimited
+sudo launchctl limit maxfiles 128000 524288
 
+source <(kubectl completion zsh)
+source <(minikube completion zsh)
+
+export NVM_SYMLINK_CURRENT=true
+export SEARCHPATHS=~/Projects:$SEARCHPATHS
 
 # BAYER
 export VAULT_ADDR='https://vault.agro.services'
@@ -83,14 +89,11 @@ export ARTIFACTORY_SVC_ACCT="${PROXY_USERNAME}@climate.com"
 export ARTIFACTORY_HOST="bin.tcc.li"
 export ARTIFACTORY_URL="https://${ARTIFACTORY_HOST}"
 export ARTIFACTORY_SVC_ACCT_PWD=$(security find-generic-password -s "Artifactory 1yr token" -w)
-#export AWS_REGION=fake
-#export AWS_DEFAULT_REGION=fake
-#export AWS_ACCESS_KEY_ID=fake
-#export AWS_SECRET_ACCESS_KEY=fake
-#export AWS_SESSION_TOKEN=fake
 
-
-sudo launchctl limit maxfiles 65536 2147483000
+function find-dir(){
+  # find directory - fd -t d -g rose .
+  fd -t d $1 ~/Projects/
+}
 
 function noset(){
   nosetests -v --tests=$1 --with-coverage --cover-html --cover-html-dir=target/cover_scheduled_ingest
@@ -111,7 +114,8 @@ function sbt-test-only() {
 
 function aws-prod() {
   export TCC_ENV=production
-  $(envmgr -E $TCC_ENV --region us-east-1 -R rose-imagery)
+  role=${1:-"rose-imagery"}
+  eval $(envmgr -E $TCC_ENV --region us-east-1 -R $role)
 
   aws ecr get-login-password --region us-east-1 |
     docker login --username AWS \
@@ -121,7 +125,7 @@ function aws-prod() {
 }
 function aws-ci() {
   export TCC_ENV=ci
-  $(envmgr -E $TCC_ENV --region us-east-1 -R rose-imagery)
+  eval $(envmgr -E $TCC_ENV --region us-east-1 -R rose-imagery)
 
   aws ecr get-login-password --region us-east-1 |
     docker login --username AWS \
@@ -130,21 +134,21 @@ function aws-ci() {
   env-update
 }
 function aws-dde() {
-  $(envmgr -E production -R dde-general)
+  eval $(envmgr -E production -R dde-general)
   env-update
 }
 function aws-ol() {
-  $(envmgr -E production -R orchestration-layer)
+  eval $(envmgr -E production -R orchestration-layer)
   env-update
 }
 function aws-phasr() {
     export TCC_ENV=production
 
-    $(envmgr -E $TCC_ENV --region us-east-1 -R phasr_enhanced-developer)
+    eval $(envmgr -E $TCC_ENV --region us-east-1 -R phasr_enhanced-developer)
     env-update
 }
 function aws-rose-fvc() {
-    $(envmgr -E fvc --region us-east-1 -R rose-imagery)
+    eval $(envmgr -E fvc --region us-east-1 -R rose-imagery)
     env-update
 }
 
@@ -154,6 +158,8 @@ function add-evn-param() {
   # params decrypt qa1.secure.team-btr.itp.CYPRESS_E2E_USER
 }
 function env-update() {
+  export JAVA_TOOL_OPTIONS="-Dhttp.proxyHost=localhost -Dhttp.proxyPort=3128 -Dhttps.proxyHost=localhost -Dhttps.proxyPort=3128"
+
   printenv
 }
 function assume-role() {
@@ -182,8 +188,32 @@ function bounce-climate-proxy() {
   export HTTPS_PROXY='http://localhost:3128'
   export NO_PROXY='localhost'
 
-   ~/bin/local-proxy.sh stop;
-   ~/bin/local-proxy.sh start;
+  ~/bin/local-proxy.sh stop;
+
+  docker network prune -f
+
+  ~/bin/local-proxy.sh start;
+}
+
+function set-fbstac-token() {
+    export FBSTAC_TOKEN=$(curl --location --request POST 'https://login.microsoftonline.com/fcb2b37b-5da0-466b-9b83-0014b67a7c78/oauth2/v2.0/token' \
+    --header 'Cookie: fpc=AuP-IPY8bJJJtO7BvvT3RYiE7lRdAQAAACj50NsOAAAAl0ZoRAEAAACk-dDbDgAAAA; stsservicecookie=estsfd; x-ms-gateway-slice=estsfd' \
+    --form 'grant_type="client_credentials"' \
+    --form 'client_id="cd839327-7e42-416f-bc91-c3798d41086e"' \
+    --form 'client_secret="n8X8Q~-9TeBdLvD~rrPnsyVOBlhlhllkIBdHraBd"' \
+    --form 'scope="https://farmbeats.azure.net/.default"' | jq '.access_token')
+}
+
+function proxy-test(){
+  if [[ -z $1 ]]
+    then url="https://kirby.production.tcc.services"
+    else url=$1
+  fi
+
+  echo "url: $url"
+  curl -iv -o /dev/null \
+    -x http://localhost:3128 \
+    $url
 }
 
 function ssh-jumpbox() {
@@ -226,7 +256,12 @@ function docker-rmi-all(){
         docker kill $(docker images -q)
 }
 
-
+# minikube/k8
+function bounce-minikube() {
+    minikube stop
+    sudo brew services restart socket_vmnet
+    minikube start --driver qemu --network socket_vmnet
+}
 
 function mvntree() {
   mvn dependency:tree -Dincludes=$1
@@ -242,9 +277,16 @@ function ps-svc() {
   ps aux | grep $1
 }
 function svc-port(){
-	lsof -nRVL -i:$1
+    if [[ -z $1 ]]
+      then port=8080
+      else port=$1
+    fi
+	lsof -nRVL -i:$port
 }
 
+function greptxt() {
+    sudo grep -Hirn "$1" $2
+}
 # NVM
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"                    # This loads nvm
