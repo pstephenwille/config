@@ -73,6 +73,7 @@ zstyle ':omz:update' frequency 30
 plugins=(git)
 
 source $ZSH/oh-my-zsh.sh
+source <(kubectl completion zsh)
 
 # User configuration
 

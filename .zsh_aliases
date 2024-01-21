@@ -2,10 +2,17 @@
 # xrandr --auto
 # xrandr --output DP-1 --mode 3840x2160 --rate 60.00
 
+source <(kubectl completion zsh)
+source <(minikube completion zsh)
+
+
 export M2_HOME=$SDKMAN_CANDIDATES_DIR/maven/current
 export BROWSER=vivaldi
 export ELECTRON_ENABLE_LOGGING=1
-
+export PATH=$PATH:$HOME/bin:$HOME/.local/
+export KUBE_EDITOR=/usr/bin/nano
+export AWS_ADMIN_ACCESS_KEY="$(kwallet-query -r aws-admin-access-key kdewallet -f aws)"
+export AWS_ADMIN_SECRET="$(kwallet-query -r aws-admin-secret kdewallet -f aws)"
 
 alias cd1="cd .."
 alias cd2="cd ../../"
@@ -30,11 +37,13 @@ alias lock="pmset displaysleepnow"
 alias myip="host myip.opendns.com resolver1.opendns.com"
 alias bounce-desktop="killall plasmashell; kstart5 plasmashell"
 alias bounce-touchpad="sudo modprobe -r hid_multitouch && sudo modprobe hid_multitouch"
+alias bounce-bluetooth="systemctl --user restart pipewire pipewire-pulse"
 alias psnode="ps aux|grep node"
 alias killallnode="sudo pkill -f node && pgrep node | xargs sudo kill -9"
 alias docker-prune="docker container  prune -f && docker image prune -f"
 alias docker-rmi="docker images -a | grep '$1' | awk '{print $3}' | xargs docker rmi"
 alias kubectl="minikube kubectl --"
+
 
 function mvntree(){
 	mvn dependency:tree -Dincludes=$1 && sudo modprobe hid_multitouch
@@ -62,4 +71,9 @@ function tcptraffic() {
   sudo tcpdump -i $1 -va
 }
 
-
+function setuppyenv(){
+    python3 -m venv venv &&
+    source venv/bin/activate &&
+    python -m pip install --upgrade pip &&
+    python -m pip install python-gitlab boto3
+}
