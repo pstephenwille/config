@@ -1,9 +1,7 @@
 #!/bin/zsh
 
-# AWS S3 cert hack
-# https://climate.jira.com/servicedesk/customer/portal/7/ITHELP-92791?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0Z3QiOiJhbm9ueW1vdXMtbGluayIsInFzaCI6IjQzYTUwZmQ5NzJhMjY2MTAwMWI3NDhhZThkMjM2ODVjYzgzZDNlZjkwMTM4ZmNmZTIzNjcxMzg2YTA3ZWYyYzciLCJpc3MiOiJzZXJ2aWNlZGVzay1qd3QtdG9rZW4taXNzdWVyIiwiY29udGV4dCI6eyJ1c2VyIjoiNTA1ODkiLCJpc3N1ZSI6IklUSEVMUC05Mjc5MSJ9LCJleHAiOjE3MDkxNTcxODUsImlhdCI6MTcwNjczNzk4NX0.H1NmauLhW3GG3U1FzpioX5RHBEhyV9r2qBHFd5GmgDg
-#export REQUESTS_CA_BUNDLE=~/bin/proxy-fix-bundle/allCAbundle.pem
-
+sudo launchctl limit maxfiles 256 unlimited
+sudo launchctl limit maxfiles 128000 524288
 
 source <(kubectl completion zsh)
 source <(minikube completion zsh)
@@ -55,7 +53,7 @@ alias docker-rmi="docker images -a | grep '$1' | awk '{print $3}' | xargs docker
 alias ps-docker="docker ps -a"
 alias nomcafee="sudo launchctl unload /Library/LaunchDaemons/com.mcafee.*"
 alias idea-aliases="idea  ~/local-config/.zsh_aliases"
-alias py3="/usr/local/bin/python3"
+
 
 
 
@@ -82,25 +80,19 @@ alias run-mocks="docker-compose -f docker-compose-mock.yaml up"
 alias artifactory-auth="curl --header 'Authorization: bearer ${ARTIFACTORY_SVC_ACCT_PWD}' 'https://bin.tcc.li/api/system/ping' -v -v -v"
 alias lein28="/Users/stephen.wille/Projects/gaia/mosaic/dev-resources/lein28"
 alias bounce-gradle-build="./gradlew --stop; ./gradlew build; ./gradlew --stop"
-alias pipfreeze="pip freeze > requirements.txt"
-alias byc="sudo afplay ~/local-config/by-your-command.wav"
 
 export PROXY_USERNAME=phillip.wille
 export PROXY_PASSWORD=$(security find-generic-password -s "okta" -w)
-#export GITLAB_TOKEN=$(security find-generic-password -s "gitlab-token" -w)
-export GITLAB_TOKEN=$(security find-generic-password -s "gitlab-2024" -w)
+export GITLAB_TOKEN=$(security find-generic-password -s "gitlab-token" -w)
 export PATH="/usr/local/opt/mysql-client/bin:$PATH"
-export PATH="/Applications/Visual Studio Code.app/Contents/Resources/app/bin/:$PATH"
 export ARTIFACTORY_SVC_ACCT="${PROXY_USERNAME}@climate.com"
 export ARTIFACTORY_HOST="bin.tcc.li"
 export ARTIFACTORY_URL="https://${ARTIFACTORY_HOST}"
-export ARTIFACTORY_SVC_ACCT_PWD=$(security find-generic-password -s "artifactory-2024" -w)
-export PATH="$HOME/anaconda3/bin:$PATH"
+export ARTIFACTORY_SVC_ACCT_PWD=$(security find-generic-password -s "Artifactory 1yr token" -w)
 
 function find-dir(){
   # find directory - fd -t d -g rose .
-  haystack=${2:-~/Projects}
-  fd -t d $1 $haystack
+  fd -t d $1 ~/Projects/
 }
 
 function noset(){
@@ -108,21 +100,17 @@ function noset(){
 }
 
 function setuppyenv(){
-    py3 -m venv venv
-    source venv/bin/activate
-    py3 -m pip install --upgrade pip
-    py3 -m pip pypi.python.org
-    py3 -m pip install python-gitlab pipreqs
-}
+    python3 -m venv venv &&
+    source venv/bin/activate &&
+    python -m pip install --upgrade pip &&
+    python -m pip install python-gitlab boto3
 
+}
 function sbt-test-only() {
 	sbt "test:testOnly *$1" 
 }
 
-function aws-prod-console() {
-    role=${1:-"rose-imagery"}
-    eval $(envmgr -e production -R $role -r us-east-1 --enable-envmgr-profiles --aws-console)
-}
+
 
 function aws-prod() {
   export TCC_ENV=production
@@ -212,7 +200,14 @@ function bounce-climate-proxy() {
   ~/bin/local-proxy.sh start -p;
 }
 
-
+function set-fbstac-token() {
+    export FBSTAC_TOKEN=$(curl --location --request POST 'https://login.microsoftonline.com/fcb2b37b-5da0-466b-9b83-0014b67a7c78/oauth2/v2.0/token' \
+    --header 'Cookie: fpc=AuP-IPY8bJJJtO7BvvT3RYiE7lRdAQAAACj50NsOAAAAl0ZoRAEAAACk-dDbDgAAAA; stsservicecookie=estsfd; x-ms-gateway-slice=estsfd' \
+    --form 'grant_type="client_credentials"' \
+    --form 'client_id="cd839327-7e42-416f-bc91-c3798d41086e"' \
+    --form 'client_secret="n8X8Q~-9TeBdLvD~rrPnsyVOBlhlhllkIBdHraBd"' \
+    --form 'scope="https://farmbeats.azure.net/.default"' | jq '.access_token')
+}
 
 function proxy-test(){
   if [[ -z $1 ]]
