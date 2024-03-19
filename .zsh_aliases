@@ -2,9 +2,10 @@
 # xrandr --auto
 # xrandr --output DP-1 --mode 3840x2160 --rate 60.00
 
+. ~/config/.zshenv
+
 source <(kubectl completion zsh)
 source <(minikube completion zsh)
-
 
 export M2_HOME=$SDKMAN_CANDIDATES_DIR/maven/current
 export BROWSER=vivaldi
