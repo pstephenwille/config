@@ -55,6 +55,16 @@ function grptxt(){
 	sudo grep -Hirn "$1" $2
 }
 
+function ps-svc() {
+  ps aux | grep $1
+}
+function svc-port(){
+    if [[ -z $1 ]]
+      then port=8080
+      else port=$1
+    fi
+	lsof -nRVL -i:$port
+}
 
 #   nix
 pkill -f xbindkeys; xbindkeys &
