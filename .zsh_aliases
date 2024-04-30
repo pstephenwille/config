@@ -14,6 +14,8 @@ export PATH=$PATH:$HOME/bin:$HOME/.local/
 export KUBE_EDITOR=/usr/bin/nano
 export AWS_ADMIN_ACCESS_KEY="$(kwallet-query -r aws-admin-access-key kdewallet -f aws)"
 export AWS_ADMIN_SECRET="$(kwallet-query -r aws-admin-secret kdewallet -f aws)"
+export METAMASK_WALLET_PRIVATE_KEY="$(kwallet-query -r METAMASK_WALLET_PRIVATE_KEY kdewallet -f misc)"
+export ETH_NETWORK_RPC_URL="$(kwallet-query -r ETH_NETWORK_RPC_URL kdewallet -f misc)"
 
 alias cd1="cd .."
 alias cd2="cd ../../"
