@@ -7,16 +7,16 @@ Switch to Next Keyboard Layout=
 [StandardShortcuts]
 AboutApp=
 AboutKDE=
-Activate Next Tab=Ctrl+]; Ctrl+PgDown
+Activate Next Tab=Ctrl+PgDown; Ctrl+]
 Activate Previous Tab=Ctrl+[; Ctrl+PgUp
 ActualSize=Ctrl+0
 AddBookmark=Ctrl+B
-Back=Back; Alt+Left
+Back=Alt+Left; Back
 BackwardWord=Ctrl+Left
 Begin=Ctrl+Home
 BeginningOfLine=Home
 Clear=
-Close=Ctrl+W; Ctrl+Esc
+Close=Ctrl+Esc; Ctrl+W
 ConfigureNotifications=
 ConfigureToolbars=
 Copy=Ctrl+C; Ctrl+Ins
@@ -38,14 +38,14 @@ FindPrev=Shift+F3
 FitToHeight=
 FitToPage=
 FitToWidth=
-Forward=Forward; Alt+Right
+Forward=Alt+Right; Forward
 ForwardWord=Ctrl+Right
 FullScreen=
 Goto=
 GotoLine=Ctrl+G
 GotoPage=
 Help=
-Home=Alt+Home; Home Page
+Home=Home Page; Alt+Home
 KeyBindings=Ctrl+Alt+,
 Mail=
 MoveToTrash=Del
@@ -54,8 +54,8 @@ Next=PgDown
 NextCompletion=Ctrl+Down
 Open=Ctrl+O
 OpenRecent=
-Paste=Ctrl+V; Shift+Ins
-Paste Selection=Ctrl+Shift+Ins
+Paste=Ctrl+V
+Paste Selection=
 Preferences=Ctrl+Shift+,
 PrevCompletion=Ctrl+Up
 Print=Ctrl+P
@@ -94,16 +94,16 @@ ZoomOut=Ctrl+-
 Toggle Screen Reader On and Off=Meta+Alt+S
 
 [kcm_touchpad][Global Shortcuts]
-Disable Touchpad=Touchpad Off
-Enable Touchpad=Touchpad On
-Toggle Touchpad=Touchpad Toggle
+Disable Touchpad=
+Enable Touchpad=
+Toggle Touchpad=
 
 [kded5][Global Shortcuts]
 Show System Activity=
 display=
 
 [khotkeys][Global Shortcuts]
-{1e51c039-dc2e-477d-8cfd-e7c33242dd9c}=Ctrl+Alt+T
+{1e51c039-dc2e-477d-8cfd-e7c33242dd9c}=
 {d03619b6-9b3c-48cc-9d9c-a2aadb485550}=
 
 [kmix][Global Shortcuts]
@@ -300,7 +300,7 @@ _launch=
 [org_kde_powerdevil][Global Shortcuts]
 Decrease Keyboard Brightness=Keyboard Brightness Down
 Decrease Screen Brightness=Monitor Brightness Down
-Hibernate=Hibernate
+Hibernate=
 Increase Keyboard Brightness=Keyboard Brightness Up
 Increase Screen Brightness=Monitor Brightness Up
 PowerDown=Power Down
@@ -321,6 +321,7 @@ activate task manager entry 7=Meta+7
 activate task manager entry 8=Meta+8
 activate task manager entry 9=Meta+9
 activate widget 3=Alt+F1
+activate widget 35=
 activate widget 4=
 clear-history=
 clipboard_action=Ctrl+Alt+X
@@ -355,4 +356,4 @@ Next Profile=
 Previous Profile=
 Toggle screen map selection=
 Toggle stylus mode=
-Toggle touch tool=Meta+Ctrl+T
+Toggle touch tool=
