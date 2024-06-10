@@ -46,7 +46,7 @@ alias killallnode="sudo pkill -f node && pgrep node | xargs sudo kill -9"
 alias docker-prune="docker container  prune -f && docker image prune -f"
 alias docker-rmi="docker images -a | grep '$1' | awk '{print $3}' | xargs docker rmi"
 alias kubectl="minikube kubectl --"
-
+sudo ln -s /usr/bin/python3 /usr/bin/python
 
 function mvntree(){
 	mvn dependency:tree -Dincludes=$1 && sudo modprobe hid_multitouch
