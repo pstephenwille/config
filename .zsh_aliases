@@ -90,3 +90,21 @@ function setuppyenv(){
     python -m pip install --upgrade pip &&
     python -m pip install python-gitlab boto3
 }
+
+
+function docker-exec() {
+    docker exec -it $1 /bin/sh
+}
+function docker-stop-all(){
+	$(docker ps -aq | xargs docker stop | xargs docker rm)
+}
+function docker-rm-all(){
+        docker kill $(docker ps -a -q)
+}
+function docker-rmi-all(){
+        docker kill $(docker images -q)
+}
+function docker-prune-all() {
+  docker stop `docker ps -qa` > /dev/null 2>&1; ## Stop all running containers
+  docker system prune --volumes --all; ## Remove all unused docker components
+}
