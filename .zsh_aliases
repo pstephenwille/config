@@ -4,8 +4,13 @@
 
 . ~/config/.zshenv
 
+export PATH=$PATH:~/.local/bin
+
 source <(kubectl completion zsh)
 source <(minikube completion zsh)
+
+# graphicmagic/imagemagic command
+unalias gm
 
 export M2_HOME=$SDKMAN_CANDIDATES_DIR/maven/current
 export BROWSER=vivaldi
